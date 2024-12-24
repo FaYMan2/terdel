@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
-	dbqueries "github.com/FaYMan2/terdel/DB_queries"
+	"github.com/FaYMan2/terdel/handlers"
+	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
@@ -27,42 +28,14 @@ func main() {
 		log.Fatalf("Failed to create connection pool: %v", err)
 	}
 	defer pool.Close()
+	app := &handlers.App{Pool: pool}
 
-	version, err := dbqueries.GetPGversion(pool)
-	if err != nil {
-		log.Fatalf("Failed to get PostgreSQL version: %v", err)
-	}
-	log.Printf("PostgreSQL version: %s\n", version)
+	router := mux.NewRouter()
+	router.HandleFunc("/pg-version", app.GetPGversionHandler).Methods(http.MethodGet)
+	router.HandleFunc("/table-names", app.GetTableNamesHandler).Methods(http.MethodGet)
+	router.HandleFunc("/table-schema/{table-name}", app.GetTableSchemaHandler).Methods(http.MethodGet)
+	router.HandleFunc("/constraints", app.GetDbConstraintsHandler).Methods(http.MethodGet)
 
-	tableNames, err := dbqueries.GetTableNames(pool)
-	if err != nil {
-		log.Fatalf("Could not get table names: %v", err)
-	}
-	for index, tableName := range tableNames {
-		fmt.Printf("%d.\t%s\n", index+1, tableName)
-	}
-
-	fmt.Printf("\n")
-	for _, tableName := range tableNames {
-		var schemas []map[string]interface{}
-		schemas, err := dbqueries.GetTableSchema(pool, tableName)
-		if err != nil {
-			log.Fatalf("Getting table schema for table : %s failed with err : %v", tableName, err)
-		}
-		schemaJSON, err := json.Marshal(schemas)
-		if err != nil {
-			log.Fatalf("error marshalling schema %v", err)
-		}
-		fmt.Printf("schema for table %s is \n%s\n", tableName, schemaJSON)
-	}
-	fmt.Printf("\n")
-	contraints, err := dbqueries.GetConstraints(pool)
-	if err != nil {
-		log.Fatalf("getting contraints failed %v", err)
-	}
-	constraintsJSON, err := json.Marshal(contraints)
-	if err != nil {
-		log.Fatalf("JSON marshalling for contraints query failed %v", err)
-	}
-	fmt.Printf("contraits in db are : %s\n", constraintsJSON)
+	fmt.Println("Server is running on port 8080")
+	log.Fatal(http.ListenAndServe(":8080", router))
 }

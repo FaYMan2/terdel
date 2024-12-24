@@ -172,8 +172,6 @@ func GetConstraints(pool *pgxpool.Pool) ([]map[string]interface{}, error) {
             AND (n2.nspname IS NULL OR n2.nspname = 'public');
     `
 
-	//fmt.Println("Executing Query:", query)
-
 	rows, err := conn.Query(context.Background(), query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute query: %w", err)
