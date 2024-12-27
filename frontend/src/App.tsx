@@ -1,5 +1,7 @@
 import { SchemaTable } from './components/SchemaTable';
 import { SchemaLegend } from './components/SchemaLegend';
+import { useState, useEffect } from 'react';
+import TableDataGenerator from './tableDataGenerator';
 
 const tables = [
   {
@@ -23,26 +25,43 @@ const tables = [
   },
 ];
 
-function App() {
+export default function App() {
+  const [isLoading, setLoading] = useState(true);
+  
+
+  useEffect(() => {
+    const dataGenerator = async () => {
+      setLoading(true);
+      const data = await TableDataGenerator()
+      console.log(data)
+      setLoading(false)
+    }
+    dataGenerator()
+  }, []);
+
   return (
-    <div className="min-h-screen bg-background p-8 relative">
-      <div className="absolute inset-0">
-        {tables.map((table, index) => (
-          <SchemaTable 
-            key={table.name} 
-            {...table} 
-            initialPosition={{ 
-              x: 50 + (index * 450), 
-              y: 50 
-            }} 
-          />
-        ))}
-      </div>
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2">
-        <SchemaLegend />
-      </div>
-    </div>
+    <>
+      {isLoading ? (
+        <h1>Loading...</h1>
+      ) : (
+        <div className="min-h-screen bg-background p-8 relative">
+          <div className="absolute inset-0">
+            {tables.map((table, index) => (
+              <SchemaTable
+                key={table.name}
+                {...table}
+                initialPosition={{
+                  x: 50 + index * 450,
+                  y: 50,
+                }}
+              />
+            ))}
+          </div>
+          <div className="fixed bottom-8 left-1/2 -translate-x-1/2">
+            <SchemaLegend />
+          </div>
+        </div>
+      )}
+    </>
   );
 }
-
-export default App;

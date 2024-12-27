@@ -87,7 +87,7 @@ async function GetConstraints() : Promise<any> {
         const response = await fetch(`http://localhost:8080/constraints`)
         if (response.ok){
             const data = await response.json()
-            return data
+            return data.constraints
         } else {
             console.error(`Failed to fetch constraints. Status: ${response.status}`);
         }
