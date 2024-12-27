@@ -1,35 +1,48 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { SchemaTable } from './components/SchemaTable';
+import { SchemaLegend } from './components/SchemaLegend';
+
+const tables = [
+  {
+    name: 'test2',
+    columns: [
+      { name: 'id', type: 'int8', isPrimary: true, isIdentity: true },
+      { name: 'created_at', type: 'timestamptz', isNullable: false },
+      { name: 'creatorId', type: 'int8', isNullable: true },
+      { name: 'data', type: 'json', isNullable: true },
+      { name: 'consumer', type: 'text', isNullable: true, isUnique: true },
+    ],
+  },
+  {
+    name: 'test',
+    columns: [
+      { name: 'id', type: 'int8', isPrimary: true, isIdentity: true },
+      { name: 'created_at', type: 'timestamptz', isNullable: false },
+      { name: 'username', type: 'text', isNullable: true, isUnique: true },
+      { name: 'password', type: 'text', isNullable: true },
+    ],
+  },
+];
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="min-h-screen bg-background p-8 relative">
+      <div className="absolute inset-0">
+        {tables.map((table, index) => (
+          <SchemaTable 
+            key={table.name} 
+            {...table} 
+            initialPosition={{ 
+              x: 50 + (index * 450), 
+              y: 50 
+            }} 
+          />
+        ))}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2">
+        <SchemaLegend />
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
