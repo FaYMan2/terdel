@@ -1,7 +1,14 @@
-import { Table } from '@/components/ui/table';
-import { cn } from '@/lib/utils';
-import { KeyRound, Hash, Fingerprint, Circle, Diamond,} from 'lucide-react';
-import { useDraggable } from '@/hooks/useDraggable';
+import { useCallback } from 'react';
+import {
+  ReactFlow,
+  Controls,
+  Background,
+  useNodesState,
+  useEdgesState,
+  addEdge,
+  MarkerType,
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 
 interface Column {
   name: string;
@@ -10,68 +17,76 @@ interface Column {
   isIdentity?: boolean;
   isUnique?: boolean;
   isNullable?: boolean;
-  isForeignKey : boolean;
-  targetTable : string | null;
-  targetColumn : string | null;
+  isForeignKey: boolean;
+  targetTable: string | null;
+  targetColumn: string | null;
 }
 
-interface SchemaTableProps {
+interface TableSchema {
   name: string;
   columns: Column[];
-  initialPosition?: { x: number; y: number };
 }
 
-export function SchemaTable({ name, columns, initialPosition }: SchemaTableProps) {
-  const { position, isDragging, handleMouseDown } = useDraggable(initialPosition);
+interface TableSchemaProps {
+  tables: TableSchema[];
+}
+
+export function SchemaTable({ tables }: TableSchemaProps) {
+  const initialNodes: Node[] = tables.map((table, index) => ({
+    id: table.name,
+    type: 'default',
+    data: {
+      label: (
+        <div className="p-2 bg-white rounded shadow">
+          <h3 className="font-medium mb-2">{table.name}</h3>
+          <ul>
+            {table.columns.map((column) => (
+              <li key={column.name}>
+                <span>{column.name} </span>
+                <span className="text-sm text-gray-500">({column.type})</span>
+                {column.isPrimary && <strong> [PK]</strong>}
+                {column.isForeignKey && <em> [FK]</em>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ),
+    },
+    position: { x: 200 * index, y: 100 * index },
+  }));
+
+  const initialEdges: Edge[] = tables.flatMap((table) =>
+    table.columns
+      .filter((column) => column.isForeignKey && column.targetTable)
+      .map((column) => ({
+        id: `${table.name}-${column.name}-${column.targetTable}`,
+        source: table.name,
+        target: column.targetTable!,
+        animated: true,
+        markerEnd: { type: MarkerType.ArrowClosed },
+      }))
+  );
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+  const onConnect = useCallback(
+    (params) => setEdges((eds) => addEdge(params, eds)),
+    [setEdges]
+  );
 
   return (
-    <div
-      className={cn(
-        "rounded-lg border bg-card text-card-foreground shadow",
-        "absolute cursor-move",
-        isDragging && "opacity-90 shadow-lg"
-      )}
-      style={{
-        transform: `translate(${position.x}px, ${position.y}px)`,
-        width: '400px',
-      }}
+    <div className="w-screen h-screen">
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onConnect={onConnect}
     >
-      <div 
-        className="flex items-center justify-between p-4 border-b"
-        onMouseDown={handleMouseDown}
-      >
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 bg-background rounded">
-            <Table className="h-4 w-4" />
-          </div>
-          <h3 className="font-medium">{name}</h3>
-        </div>
-      </div>
-      <div className="divide-y">
-        {columns.map((column) => (
-          <div
-            key={column.name}
-            className="flex items-center justify-between p-4 hover:bg-muted/50"
-          >
-            <div className="flex items-center gap-2">
-              <div className="flex gap-1">
-                {column.isPrimary && <KeyRound className="h-4 w-4 text-primary" />}
-                {column.isIdentity && <Hash className="h-4 w-4 text-primary" />}
-                {column.isUnique && <Fingerprint className="h-4 w-4 text-primary" />}
-                {column.isNullable && <Circle className="h-4 w-4 text-primary" />}
-                {!column.isNullable && <Diamond className="h-4 w-4 text-primary" />}
-              </div>
-              <span>{column.name}</span>
-            </div>
-            <span className={cn(
-              "px-2 py-1 rounded text-sm",
-              "bg-secondary text-secondary-foreground"
-            )}>
-              {column.type}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
+      <Background />
+      <Controls />
+    </ReactFlow>
+</div>
   );
 }
