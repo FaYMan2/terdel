@@ -3,41 +3,37 @@ import { SchemaLegend } from './components/SchemaLegend';
 import { useState, useEffect } from 'react';
 import TableDataGenerator from './tableDataGenerator';
 
-/*const tables = [
-  {
-    name: 'test2',
-    columns: [
-      { name: 'id', type: 'int8', isPrimary: true, isIdentity: true },
-      { name: 'created_at', type: 'timestamptz', isNullable: false },
-      { name: 'creatorId', type: 'int8', isNullable: true },
-      { name: 'data', type: 'json', isNullable: true },
-      { name: 'consumer', type: 'text', isNullable: true, isUnique: true },
-    ],
-  },
-  {
-    name: 'test',
-    columns: [
-      { name: 'id', type: 'int8', isPrimary: true, isIdentity: true },
-      { name: 'created_at', type: 'timestamptz', isNullable: false },
-      { name: 'username', type: 'text', isNullable: true, isUnique: true },
-      { name: 'password', type: 'text', isNullable: true },
-    ],
-  },
-];*/  
+const GRID_COLUMNS = 4; // Adjust this number for column count
+const TABLE_WIDTH = 200; // Width of each table
+const TABLE_HEIGHT = 200;
+
 
 export default function App() {
   const [isLoading, setLoading] = useState(true);
-  const [tables,setTables] = useState([])
+  const [tables, setTables] = useState([]);
+  const [calculatedPositions, setCalculatedPositions] = useState([]);
 
   useEffect(() => {
     const dataGenerator = async () => {
       setLoading(true);
-      const data = await TableDataGenerator()
-      console.log(data)
-      setTables(data)
-      setLoading(false)
-    }
-    dataGenerator()
+      const data = await TableDataGenerator();
+      console.log(data);
+
+      const positions = data.map((_, index) => {
+        const col = index % GRID_COLUMNS;
+        const row = Math.floor(index / GRID_COLUMNS);
+        return {
+          x: col * TABLE_WIDTH + 20,
+          y: row * TABLE_HEIGHT + 50 ,
+        };
+      });
+
+      setTables(data);
+      setCalculatedPositions(positions);
+      setLoading(false);
+    };
+
+    dataGenerator();
   }, []);
 
   return (
@@ -45,16 +41,18 @@ export default function App() {
       {isLoading ? (
         <h1>Loading...</h1>
       ) : (
-        <div className="min-h-screen bg-background p-8 relative">
+        <div
+          className="min-h-screen bg-background p-8  overflow-auto"
+          style={{
+            width: `${GRID_COLUMNS * TABLE_WIDTH}px`,
+          }}
+        >
           <div className="absolute inset-0">
             {tables.map((table, index) => (
               <SchemaTable
                 key={table.name}
                 {...table}
-                initialPosition={{
-                  x: 50 + index * 450,
-                  y: 50,
-                }}
+                initialPosition={calculatedPositions[index]} // Use pre-calculated positions
               />
             ))}
           </div>

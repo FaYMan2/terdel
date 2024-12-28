@@ -10,6 +10,9 @@ interface Column {
   isIdentity?: boolean;
   isUnique?: boolean;
   isNullable?: boolean;
+  isForeignKey : boolean;
+  targetTable : string | null;
+  targetColumn : string | null;
 }
 
 interface SchemaTableProps {

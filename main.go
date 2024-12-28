@@ -40,7 +40,7 @@ func main() {
 	router.HandleFunc("/constraints", app.GetDbConstraintsHandler).Methods(http.MethodGet)
 
 	corsHandler := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173"}, // Adjust the origin to match your frontend
+		AllowedOrigins:   []string{"http://localhost:5173"},
 		AllowCredentials: true,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization"},
