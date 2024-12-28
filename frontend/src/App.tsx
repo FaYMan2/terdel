@@ -3,7 +3,7 @@ import { SchemaLegend } from './components/SchemaLegend';
 import { useState, useEffect } from 'react';
 import TableDataGenerator from './tableDataGenerator';
 
-const tables = [
+/*const tables = [
   {
     name: 'test2',
     columns: [
@@ -23,17 +23,18 @@ const tables = [
       { name: 'password', type: 'text', isNullable: true },
     ],
   },
-];
+];*/  
 
 export default function App() {
   const [isLoading, setLoading] = useState(true);
-  
+  const [tables,setTables] = useState([])
 
   useEffect(() => {
     const dataGenerator = async () => {
       setLoading(true);
       const data = await TableDataGenerator()
       console.log(data)
+      setTables(data)
       setLoading(false)
     }
     dataGenerator()
