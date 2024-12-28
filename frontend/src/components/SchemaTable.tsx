@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback,useMemo } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -9,7 +9,7 @@ import {
   MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-
+import { TableNode } from './TableNode';
 interface Column {
   name: string;
   type: string;
@@ -31,39 +31,34 @@ interface TableSchemaProps {
   tables: TableSchema[];
 }
 
+
+
 export function SchemaTable({ tables }: TableSchemaProps) {
-  const initialNodes: Node[] = tables.map((table, index) => ({
+  const tableNodeType = useMemo(() => ({ tableNodeType: TableNode }), []);
+
+  const initialNodes = tables.map((table, index) => ({
     id: table.name,
-    type: 'default',
-    data: {
-      label: (
-        <div className="p-2 bg-white rounded shadow">
-          <h3 className="font-medium mb-2">{table.name}</h3>
-          <ul>
-            {table.columns.map((column) => (
-              <li key={column.name}>
-                <span>{column.name} </span>
-                <span className="text-sm text-gray-500">({column.type})</span>
-                {column.isPrimary && <strong> [PK]</strong>}
-                {column.isForeignKey && <em> [FK]</em>}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ),
+    type: 'tableNodeType',
+    data : {
+      ...table
     },
-    position: { x: 200 * index, y: 100 * index },
+    position: { x: 200 * index, y: 150 * index },
   }));
 
-  const initialEdges: Edge[] = tables.flatMap((table) =>
+  const initialEdges = tables.flatMap((table) =>
     table.columns
-      .filter((column) => column.isForeignKey && column.targetTable)
+      .filter((column) => column.isForeignKey && column.targetTable && column.targetColumn)
       .map((column) => ({
-        id: `${table.name}-${column.name}-${column.targetTable}`,
-        source: table.name,
-        target: column.targetTable!,
+        id: `${table.name}-${column.name}-${column.targetTable}-${column.targetColumn}`,
+        source: table.name, 
+        sourceHandle: `${table.name}-${column.name}-source`, 
+        target: column.targetTable, 
+        targetHandle: `${column.targetTable}-${column.targetColumn}-target`,
         animated: true,
+        style: { stroke: '#7c3aed', strokeWidth: 2 },
         markerEnd: { type: MarkerType.ArrowClosed },
+        label: `${column.name} → ${column.targetTable}.${column.targetColumn}`,
+        labelStyle: { fill: '#7c3aed', fontWeight: 'bold' },
       }))
   );
 
@@ -77,16 +72,18 @@ export function SchemaTable({ tables }: TableSchemaProps) {
 
   return (
     <div className="w-screen h-screen">
-    <ReactFlow
-      nodes={nodes}
-      edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      onConnect={onConnect}
-    >
-      <Background />
-      <Controls />
-    </ReactFlow>
-</div>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        nodeTypes={tableNodeType}
+        fitView
+      >
+        <Background color="#e5e7eb" gap={16} />
+        <Controls />
+      </ReactFlow>
+    </div>
   );
 }
