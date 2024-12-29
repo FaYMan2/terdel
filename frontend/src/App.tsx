@@ -3,11 +3,6 @@ import { SchemaLegend } from './components/SchemaLegend';
 import { useState, useEffect } from 'react';
 import TableDataGenerator from './tableDataGenerator';
 
-//const GRID_COLUMNS = 4; // Adjust this number for column count
-//const TABLE_WIDTH = 200; // Width of each table
-//const TABLE_HEIGHT = 200;
-
-
 export default function App() {
   const [isLoading, setLoading] = useState(true);
   const [tables, setTables] = useState([]);
@@ -29,11 +24,11 @@ export default function App() {
       {isLoading ? (
         <h1>Loading...</h1>
       ) : (
-        <>
-          <SchemaTable tables={tables}/>
-          <div className="fixed bottom-8 left-1/2 -translate-x-1/2">
-            <SchemaLegend />
-          </div>
+        <> 
+            <SchemaTable tables={tables}/>
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2">
+              <SchemaLegend />
+            </div>
         </>
       )}
     </>
