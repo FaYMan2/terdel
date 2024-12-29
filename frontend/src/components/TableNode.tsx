@@ -1,5 +1,4 @@
 import { Handle, Position } from '@xyflow/react';
-import { Table } from './ui/table';
 import { KeyRound, Hash, Fingerprint, Circle, Diamond } from 'lucide-react';
 
 export function TableNode({ data }: { data: any }) {
@@ -7,10 +6,9 @@ export function TableNode({ data }: { data: any }) {
     <div className="rounded-lg border bg-card text-card-foreground shadow p-4 w-64">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Table className="h-5 w-5 text-primary" />
           <h3 className="font-semibold text-lg">{data.name}</h3>
         </div>
-      </div>
+      </div>  
       <div className="divide-y">
         {data.columns.map((column) => (
           <div
@@ -27,7 +25,7 @@ export function TableNode({ data }: { data: any }) {
               </div>
               <span className="font-medium">{column.name}</span>
             </div>
-            <span className="px-2 py-1 rounded text-xs bg-secondary text-secondary-foreground">
+            <span className="ml-2 px-2 py-1 rounded text-xs bg-secondary text-secondary-foreground">
               {column.type}
             </span>
 

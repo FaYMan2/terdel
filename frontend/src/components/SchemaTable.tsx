@@ -32,17 +32,72 @@ interface TableSchemaProps {
 }
 
 
+const orderedTables = (Tables : TableSchema[]) : TableSchema[] => {
+  const rank = (table : TableSchema) : number => {
+    return table.columns.filter(column => column.isForeignKey).length
+  }
+
+  return Tables.sort((a : TableSchema,b : TableSchema) => rank(b) - rank(a))
+}
+
+function performDFS(
+  tables: TableSchema[],
+  table: TableSchema,
+  positions: Record<string, { x: number; y: number }>,
+  x: number,
+  y: number,
+  visited: Set<string>,
+  yStep: number
+) {
+  if (visited.has(table.name)) return; 
+
+  positions[table.name] = { x, y };
+  visited.add(table.name);
+
+  const targetTables = table.columns
+    .filter((column) => column.isForeignKey && column.targetTable)
+    .map((column) => column.targetTable!);
+
+  let childY = y - yStep * Math.floor(targetTables.length / 2); 
+  targetTables.forEach((targetTable) => {
+    const target = tables.find((t) => t.name === targetTable);
+    if (target) {
+      performDFS(tables, target, positions, x + 500, childY, visited, yStep);
+      childY += yStep; 
+    }
+  });
+}
+
+function generateNodePositions(tables: TableSchema[]): { id: string; position: { x: number; y: number } }[] {
+  const sortedTables = orderedTables(tables); 
+  const positions: Record<string, { x: number; y: number }> = {};
+  const visited = new Set<string>();
+
+  const yStep = 350; 
+  let x = 0, y = 0; 
+  sortedTables.forEach((table) => {
+    if (!visited.has(table.name)) {
+      performDFS(tables, table, positions, x, y, visited, yStep);
+      y += yStep; 
+    }
+  });
+
+  return Object.entries(positions).map(([id, position]) => ({ id, position }));
+}
+
+
 
 export function SchemaTable({ tables }: TableSchemaProps) {
   const tableNodeType = useMemo(() => ({ tableNodeType: TableNode }), []);
-
-  const initialNodes = tables.map((table, index) => ({
+  const Positions = generateNodePositions(tables)
+  console.log(Positions)
+  const initialNodes = orderedTables(tables).map((table, index) => ({
     id: table.name,
     type: 'tableNodeType',
     data : {
       ...table
     },
-    position: { x: 200 * index, y: 150 * index },
+    position : Positions.find((pos) => pos.id == table.name)?.position,
   }));
 
   const initialEdges = tables.flatMap((table) =>
