@@ -1,7 +1,7 @@
 import { SchemaTable } from './components/SchemaTable';
 import { SchemaLegend } from './components/SchemaLegend';
 import { useState, useEffect } from 'react';
-import TableDataGenerator from './tableDataGenerator';
+import TableDataGenerator from './SchemaDataFetcher';
 
 export default function App() {
   const [isLoading, setLoading] = useState(true);
