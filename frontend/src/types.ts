@@ -1,4 +1,4 @@
-interface Column {
+export interface Column {
     name: string;
     type: string;
     isPrimary?: boolean;
@@ -10,7 +10,7 @@ interface Column {
     targetColumn: string | null;
   }
   
-  export interface TableSchema {
-    name: string;
-    columns: Column[];
-  }
+export interface TableSchema {
+  name: string;
+  columns: Column[];
+}
