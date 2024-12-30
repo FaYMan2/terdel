@@ -10,22 +10,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { TableNode } from './TableNode';
-interface Column {
-  name: string;
-  type: string;
-  isPrimary?: boolean;
-  isIdentity?: boolean;
-  isUnique?: boolean;
-  isNullable?: boolean;
-  isForeignKey: boolean;
-  targetTable: string | null;
-  targetColumn: string | null;
-}
-
-interface TableSchema {
-  name: string;
-  columns: Column[];
-}
+import { TableSchema } from '@/types';
 
 interface TableSchemaProps {
   tables: TableSchema[];

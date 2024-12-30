@@ -1,4 +1,6 @@
-export default async function TableDataGenerator() {
+import { TableSchema } from "./types";
+
+export default async function TableDataGenerator() : Promise<TableSchema[]> {
     try {
       const [tableNames, constraints] = await Promise.all([GetTableNames(), GetConstraints()]);
   
@@ -34,7 +36,7 @@ async function GetTableNames(): Promise<string[]> {
     return []; 
 }
 
-async function GetTableSchema(tableName: string, constraints: any[]): Promise<any> {
+async function GetTableSchema(tableName: string, constraints: any[]): Promise<TableSchema | null> {
     try {
       const response = await fetch(`http://localhost:8080/table-schema/${tableName}`);
       if (response.ok) {
@@ -99,3 +101,14 @@ async function GetConstraints() : Promise<any> {
 }
 
 
+async function GenerateTableData(tableName : string) : Promise<TableSchema | null> {
+  try {
+    const contrainsts = await GetConstraints()
+    const tableSchema = await GetTableSchema(tableName,contrainsts)
+    return tableSchema
+  }
+  catch (e) {
+    console.error("Fetching Table schema failed : " + e);
+  }
+  return null
+}
