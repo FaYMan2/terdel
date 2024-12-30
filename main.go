@@ -34,11 +34,11 @@ func main() {
 
 	router := mux.NewRouter()
 	router.Use(middleware.LoggingMiddleware)
-	router.HandleFunc("/pg-version", app.GetPGversionHandler).Methods(http.MethodGet)
-	router.HandleFunc("/table-names", app.GetTableNamesHandler).Methods(http.MethodGet)
-	router.HandleFunc("/table-schema/{table-name}", app.GetTableSchemaHandler).Methods(http.MethodGet)
-	router.HandleFunc("/constraints", app.GetDbConstraintsHandler).Methods(http.MethodGet)
-
+	router.HandleFunc("/pg-version", app.GetPGversionHandler).Methods("GET")
+	router.HandleFunc("/table-names", app.GetTableNamesHandler).Methods("GET")
+	router.HandleFunc("/table-schema/{table-name}", app.GetTableSchemaHandler).Methods("GET")
+	router.HandleFunc("/constraints", app.GetDbConstraintsHandler).Methods("GET")
+	router.HandleFunc("/table-data/{table-name}", app.GetTableDataHandler).Methods("GET")
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173"},
 		AllowCredentials: true,

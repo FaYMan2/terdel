@@ -58,3 +58,22 @@ func (a *App) GetDbConstraintsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
+func (a *App) GetTableDataHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	tableName := vars["table-name"]
+	if tableName == "" {
+		http.Error(w, "table name is required", http.StatusBadRequest)
+		return
+	}
+	tableData, err := dbqueries.GetTableData(a.Pool, tableName)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	response := map[string]interface{}{"data": tableData}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+	}
+}

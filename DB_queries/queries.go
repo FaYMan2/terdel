@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -201,4 +203,52 @@ func GetConstraints(pool *pgxpool.Pool) ([]map[string]interface{}, error) {
 	}
 
 	return constraints, nil
+}
+
+func isValidTableName(tableName string) bool {
+	validTableName := regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
+	return validTableName.MatchString(tableName)
+}
+
+func GetTableData(pool *pgxpool.Pool, tableName string) ([]map[string]interface{}, error) {
+	if pool == nil {
+		return nil, errors.New("database pool is nil")
+	}
+	if tableName == "" {
+		return nil, errors.New("table name cannot be empty")
+	}
+	if !isValidTableName(tableName) {
+		return nil, errors.New("invalid table name format")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	query := fmt.Sprintf("SELECT * FROM %s", tableName)
+
+	rows, err := pool.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("error querying table %s: %w", tableName, err)
+	}
+	defer rows.Close()
+
+	var results []map[string]interface{}
+	for rows.Next() {
+		values, err := rows.Values()
+		if err != nil {
+			return nil, fmt.Errorf("error reading row values: %w", err)
+		}
+
+		rowMap := make(map[string]interface{})
+		fieldDescriptions := rows.FieldDescriptions()
+		for i, field := range fieldDescriptions {
+			rowMap[string(field.Name)] = values[i]
+		}
+		results = append(results, rowMap)
+	}
+
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("error during row iteration: %w", rows.Err())
+	}
+
+	return results, nil
 }

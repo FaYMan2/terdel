@@ -101,7 +101,7 @@ async function GetConstraints() : Promise<any> {
 }
 
 
-async function GenerateTableData(tableName : string) : Promise<TableSchema | null> {
+export async function GenerateTableSchema(tableName : string) : Promise<TableSchema | null> {
   try {
     const contrainsts = await GetConstraints()
     const tableSchema = await GetTableSchema(tableName,contrainsts)
