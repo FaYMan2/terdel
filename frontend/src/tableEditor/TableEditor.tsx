@@ -14,11 +14,32 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+const isJson = (checkVal: any): boolean => {
+  try {
+    if (typeof checkVal === "string") {
+      JSON.parse(checkVal);
+      return true;
+    }
+    if (typeof checkVal === "object" && checkVal !== null) {
+      return true; 
+    }
+    return false;
+  } catch {
+    return false;
+  }
+};
+
+
 export default function TableEditor() {
   const [isLoading, setLoading] = useState<boolean>(true);
   const [tableSchema, setTableSchema] = useState<TableSchema | null>(null);
   const { tableName } = useParams();
-  const [tableData, setTableData] = useState(null);
+  const [tableData, setTableData] = useState<any[]>([]);
+  const [editingCell, setEditingCell] = useState<{
+    rowIndex: number;
+    colName: string;
+    value: string;
+  } | null>(null);
 
   useEffect(() => {
     const dataGenerator = async () => {
@@ -27,13 +48,50 @@ export default function TableEditor() {
         GenerateTableSchema(tableName),
         GetTableData(tableName),
       ]);
-      console.log(`Data fetched:`, tableSchemaData);
       setTableSchema(tableSchemaData);
       setTableData(tableRowData);
       setLoading(false);
     };
     dataGenerator();
   }, [tableName]);
+
+  const handleDoubleClick = (rowIndex: number, colName: string, value: any) => {
+    const parsedValue =
+      isJson(value) && typeof value === "object"
+        ? JSON.stringify(value, null, 2) 
+        : value;
+  
+    setEditingCell({ rowIndex, colName, value: parsedValue });
+  };
+  
+  const handleBlur = () => {
+    if (editingCell) {
+      const updatedTableData = [...tableData];
+      const parsedValue =
+        isJson(editingCell.value) && typeof editingCell.value === "string"
+          ? JSON.parse(editingCell.value)
+          : editingCell.value;
+  
+      updatedTableData[editingCell.rowIndex][editingCell.colName] = parsedValue;
+      setTableData(updatedTableData);
+      setEditingCell(null);
+    }
+  };
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (editingCell) {
+      setEditingCell({
+        ...editingCell,
+        value: e.target.value,
+      });
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleBlur();
+    }
+  };
 
   return (
     <div className="flex flex-col items-center min-h-screen py-8 w-screen">
@@ -55,10 +113,34 @@ export default function TableEditor() {
               {tableData.map((row, rowIndex) => (
                 <TableRow key={rowIndex} className="hover:bg-slate-100">
                   {tableSchema?.columns.map((column, colIndex) => (
-                    <TableCell key={colIndex}>
-                      {column.type.toLowerCase() === "json"
-                        ? JSON.stringify(row[column.name] ?? "NULL")
-                        : row[column.name] ?? "NULL"}
+                    <TableCell
+                    key={colIndex}
+                    onDoubleClick={() =>
+                      handleDoubleClick(
+                        rowIndex,
+                        column.name,
+                        isJson(row[column.name]) && column.name.toLowerCase() === 'json' ? JSON.stringify(row[column.name]) : row[column.name]
+                      )
+                    }
+                  >
+                  
+                      {editingCell &&
+                      editingCell.rowIndex === rowIndex &&
+                      editingCell.colName === column.name ? (
+                        <input
+                          type="text"
+                          value={editingCell.value}
+                          onChange={handleInputChange}
+                          onBlur={handleBlur}
+                          onKeyDown={handleKeyDown}
+                          className="p-1 border rounded bg-white"
+                          autoFocus
+                        />
+                      ) : column.type.toLowerCase() === "json" ? (
+                        JSON.stringify(row[column.name] ?? "NULL")
+                      ) : (
+                        row[column.name] ?? "NULL"
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>

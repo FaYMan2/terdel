@@ -99,6 +99,7 @@ export function SchemaTable({ tables }: TableSchemaProps) {
         markerEnd: { type: MarkerType.ArrowClosed },
         label: `${column.name} → ${column.targetTable}.${column.targetColumn}`,
         labelStyle: { fill: '#7c3aed', fontWeight: 'bold' },
+        type : "simplebezier"
       }))
   );
 
