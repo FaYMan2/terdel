@@ -134,7 +134,8 @@ export default function TableEditor() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {tableData.map((row, rowIndex) => (
+              {
+                tableData && tableData.map((row, rowIndex) => (
                 <TableRow key={rowIndex} className="hover:bg-slate-100">
                   {tableSchema?.columns.map((column, colIndex) => (
                     <TableCell
