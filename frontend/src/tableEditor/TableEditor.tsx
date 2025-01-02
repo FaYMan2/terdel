@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { KeyRound, Hash, Fingerprint, Circle, Diamond } from "lucide-react";
 
 const isJson = (checkVal: any): boolean => {
   try {
@@ -41,6 +42,24 @@ export default function TableEditor() {
     value: string;
   } | null>(null);
 
+  const renderColumnIcon = (column) => (
+    <div className="flex items-center gap-1">
+      {column.isPrimary && <KeyRound className="h-4 w-4 text-slate-800" title="Primary Key" />}
+      {column.isIdentity && <Hash className="h-4 w-4 text-slate-800" title="Identity" />}
+      {column.isUnique && <Fingerprint className="h-4 w-4 text-slate-800" title="Unique" />}
+      {column.isNullable ? (
+        <Circle className="h-4 w-4 text-slate-800" title="Nullable" />
+      ) : (
+        <Diamond className="h-4 w-4 text-slate-800" title="Non-Nullable" />
+      )}
+      {column.isForeignKey && (
+        <Hash
+          className="h-4 w-4 text-slate-800"
+          title={`Foreign Key (${column.targetTable}.${column.targetColumn})`}
+        />
+      )}
+    </div>
+  );
   useEffect(() => {
     const dataGenerator = async () => {
       setLoading(true);
@@ -105,7 +124,12 @@ export default function TableEditor() {
             <TableHeader>
               <TableRow>
                 {tableSchema?.columns.map((column, index) => (
-                  <TableHead key={index}>{column.name}</TableHead>
+                  <TableHead key={index}>
+                    <span className="flex gap-2">
+                      {column.name}
+                      {renderColumnIcon(column)}
+                    </span>
+                    </TableHead>
                 ))}
               </TableRow>
             </TableHeader>
