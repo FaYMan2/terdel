@@ -117,87 +117,114 @@ export default function TableEditor() {
   };
 
   return (
-    <div className="flex flex-col items-center min-h-screen py-8 w-screen">
+    <div className="flex flex-col items-center min-h-screen py-4 w-full overflow-y-auto">
       <h1 className="text-3xl font-bold text-black">{tableName}</h1>
-  
+
       {isLoading ? (
         <h1 className="text-xl font-bold text-black">Loading...</h1>
       ) : tableSchema ? (
         <div className="w-3/4">
-          {/* Button at the top-right corner */}
           <div className="flex justify-end mb-4">
             {tableData && (
               <button
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="px-4 py-2 bg-slate-200 text-gray-800 rounded hover:bg-slate-400 border-slate-200"
                 onClick={handleInsertItem}
               >
-                <Plus/>
+                <Plus />
               </button>
             )}
           </div>
-  
-          <Table>
-            <TableCaption>A preview of the {tableName} table.</TableCaption>
-            <TableHeader>
-              <TableRow>
-                {tableSchema.columns.map((column, index) => (
-                  <TableHead key={index}>
-                    <span className="flex gap-2">
-                      {column.name}
-                      {renderColumnIcon(column)}
-                    </span>
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tableData &&
-                tableData.map((row, rowIndex) => (
-                  <TableRow key={rowIndex} className="hover:bg-slate-100">
-                    {tableSchema.columns.map((column, colIndex) => (
-                      <TableCell
-                        key={colIndex}
-                        onDoubleClick={() =>
-                          handleDoubleClick(
-                            rowIndex,
-                            column.name,
-                            isJson(row[column.name]) &&
-                              column.name.toLowerCase() === "json"
-                              ? JSON.stringify(row[column.name])
-                              : row[column.name]
-                          )
-                        }
-                      >
-                        {editingCell &&
-                        editingCell.rowIndex === rowIndex &&
-                        editingCell.colName === column.name ? (
-                          <input
-                            type="text"
-                            value={editingCell.value}
-                            onChange={handleInputChange}
-                            onBlur={handleBlur}
-                            onKeyDown={handleKeyDown}
-                            className="p-1 border rounded bg-white"
-                            autoFocus
-                          />
-                        ) : column.type.toLowerCase() === "json" ? (
-                          JSON.stringify(row[column.name] ?? "NULL")
-                        ) : (
-                          row[column.name] ?? "NULL"
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-            </TableBody>
-          </Table>
+          <div className="relative">
+            <div
+              className="overflow-x-auto flex flex-col-reverse"
+              style={{ direction: "rtl",transform : "rotate(180deg)"}}
+            >
+              <div style={{ direction: "ltr",transform : "rotate(-180deg)"}}>
+                <Table>
+                  <TableCaption>A preview of the {tableName} table.</TableCaption>
+                  <TableHeader>
+                    <TableRow>
+                      {tableSchema.columns.map((column, index) => (
+                        <TableHead key={index} className="px-6">
+                          <span className="flex gap-2">
+                            {column.name}
+                            {renderColumnIcon(column)}
+                          </span>
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {tableData &&
+                      tableData.map((row, rowIndex) => (
+                        <TableRow key={rowIndex} className="hover:bg-slate-100">
+                          {tableSchema.columns.map((column, colIndex) => (
+                            <TableCell
+                              key={colIndex}
+                              className="px-6"
+                              onDoubleClick={() =>
+                                handleDoubleClick(
+                                  rowIndex,
+                                  column.name,
+                                  isJson(row[column.name]) && column.name.toLowerCase() === "json"
+                                    ? JSON.stringify(row[column.name])
+                                    : row[column.name]
+                                )
+                              }
+                            >
+                              {editingCell &&
+                              editingCell.rowIndex === rowIndex &&
+                              editingCell.colName === column.name ? (
+                                column.type.toLowerCase() === "boolean" ? (
+                                  <select
+                                    value={editingCell.value}
+                                    onChange={(e) =>
+                                      setEditingCell({
+                                        ...editingCell,
+                                        value: e.target.value === "true",
+                                      })
+                                    }
+                                    onBlur={handleBlur}
+                                    className="p-1 border rounded bg-white"
+                                    autoFocus
+                                  >
+                                    <option value="true">True</option>
+                                    <option value="false">False</option>
+                                  </select>
+                                ) : (
+                                  <input
+                                    type="text"
+                                    value={editingCell.value}
+                                    onChange={handleInputChange}
+                                    onBlur={handleBlur}
+                                    onKeyDown={handleKeyDown}
+                                    className="p-1 border rounded bg-white"
+                                    autoFocus
+                                  />
+                                )
+                              ) : column.type.toLowerCase() === "boolean" ? (
+                                <span>{row[column.name] ? "True" : "False"}</span>
+                              ) : column.type.toLowerCase() === "json" ? (
+                                JSON.stringify(row[column.name] ?? "NULL")
+                              ) : (
+                                row[column.name] ?? "NULL"
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </div>
         </div>
       ) : (
         <div>
           <h1>Table not available</h1>
         </div>
       )}
-  
+
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2">
         <SchemaLegend />
       </div>
