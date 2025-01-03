@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { KeyRound, Hash, Fingerprint, Circle, Diamond } from "lucide-react";
+import { KeyRound, Hash, Fingerprint, Circle, Diamond,Plus } from "lucide-react";
 
 const isJson = (checkVal: any): boolean => {
   try {
@@ -22,14 +22,13 @@ const isJson = (checkVal: any): boolean => {
       return true;
     }
     if (typeof checkVal === "object" && checkVal !== null) {
-      return true; 
+      return true;
     }
     return false;
   } catch {
     return false;
   }
 };
-
 
 export default function TableEditor() {
   const [isLoading, setLoading] = useState<boolean>(true);
@@ -60,6 +59,7 @@ export default function TableEditor() {
       )}
     </div>
   );
+
   useEffect(() => {
     const dataGenerator = async () => {
       setLoading(true);
@@ -77,12 +77,12 @@ export default function TableEditor() {
   const handleDoubleClick = (rowIndex: number, colName: string, value: any) => {
     const parsedValue =
       isJson(value) && typeof value === "object"
-        ? JSON.stringify(value, null, 2) 
+        ? JSON.stringify(value, null, 2)
         : value;
-  
+
     setEditingCell({ rowIndex, colName, value: parsedValue });
   };
-  
+
   const handleBlur = () => {
     if (editingCell) {
       const updatedTableData = [...tableData];
@@ -90,13 +90,13 @@ export default function TableEditor() {
         isJson(editingCell.value) && typeof editingCell.value === "string"
           ? JSON.parse(editingCell.value)
           : editingCell.value;
-  
+
       updatedTableData[editingCell.rowIndex][editingCell.colName] = parsedValue;
       setTableData(updatedTableData);
       setEditingCell(null);
     }
   };
-  
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (editingCell) {
       setEditingCell({
@@ -112,13 +112,30 @@ export default function TableEditor() {
     }
   };
 
+  const handleInsertItem = () => {
+
+  };
+
   return (
     <div className="flex flex-col items-center min-h-screen py-8 w-screen">
-      <h1 className="text-3xl font-bold mb-6 text-black">{tableName}</h1>
+      <h1 className="text-3xl font-bold text-black">{tableName}</h1>
+  
       {isLoading ? (
         <h1 className="text-xl font-bold text-black">Loading...</h1>
       ) : tableSchema ? (
         <div className="w-3/4">
+          {/* Button at the top-right corner */}
+          <div className="flex justify-end mb-4">
+            {tableData && (
+              <button
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                onClick={handleInsertItem}
+              >
+                <Plus/>
+              </button>
+            )}
+          </div>
+  
           <Table>
             <TableCaption>A preview of the {tableName} table.</TableCaption>
             <TableHeader>

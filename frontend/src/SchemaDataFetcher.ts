@@ -21,7 +21,7 @@ export default async function TableDataGenerator() : Promise<TableSchema[]> {
   }
   
 
-async function GetTableNames(): Promise<string[]> {
+export async function GetTableNames(): Promise<string[]> {
     try {
         const response = await fetch(`http://localhost:8080/table-names`);
             if (response.ok) {
