@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -251,4 +252,49 @@ func GetTableData(pool *pgxpool.Pool, tableName string) ([]map[string]interface{
 	}
 
 	return results, nil
+}
+
+func InsertIntoTable(pool *pgxpool.Pool, tableName string, data map[string]interface{}) error {
+	if tableName == "" {
+		return fmt.Errorf("table name cannot be empty")
+	}
+	columns := make([]string, 0, len(data))
+	values := make([]interface{}, 0, len(data))
+	placeholders := make([]string, 0, len(data))
+
+	i := 1
+	for col, val := range data {
+		columns = append(columns, col)
+		values = append(values, val)
+		placeholders = append(placeholders, fmt.Sprintf("$%d", i))
+		i++
+	}
+	query := fmt.Sprintf(
+		`INSERT INTO %s (%s) VALUES (%s) RETURNING *`,
+		tableName,
+		strings.Join(columns, ", "),
+		strings.Join(placeholders, ", "),
+	)
+
+	ctx := context.Background()
+	rows, err := pool.Query(ctx, query, values...)
+	if err != nil {
+		return fmt.Errorf("failed to execute query: %w", err)
+	}
+	defer rows.Close()
+
+	fmt.Println("Inserted row(s):")
+	for rows.Next() {
+		rowValues, err := rows.Values()
+		if err != nil {
+			return fmt.Errorf("failed to fetch row values: %w", err)
+		}
+		fmt.Println(rowValues)
+	}
+
+	if rows.Err() != nil {
+		return fmt.Errorf("error occurred during row iteration: %w", rows.Err())
+	}
+
+	return nil
 }

@@ -39,6 +39,8 @@ func main() {
 	router.HandleFunc("/table-schema/{table-name}", app.GetTableSchemaHandler).Methods("GET")
 	router.HandleFunc("/constraints", app.GetDbConstraintsHandler).Methods("GET")
 	router.HandleFunc("/table-data/{table-name}", app.GetTableDataHandler).Methods("GET")
+	router.HandleFunc("/tableOperations/insert/{table-name}", app.InsertIntoTableHandler).Methods("POST")
+
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173"},
 		AllowCredentials: true,

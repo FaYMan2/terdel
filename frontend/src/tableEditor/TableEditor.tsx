@@ -117,67 +117,74 @@ export default function TableEditor() {
       <h1 className="text-3xl font-bold mb-6 text-black">{tableName}</h1>
       {isLoading ? (
         <h1 className="text-xl font-bold text-black">Loading...</h1>
-      ) : (
+      ) : tableSchema ? (
         <div className="w-3/4">
           <Table>
             <TableCaption>A preview of the {tableName} table.</TableCaption>
             <TableHeader>
               <TableRow>
-                {tableSchema?.columns.map((column, index) => (
+                {tableSchema.columns.map((column, index) => (
                   <TableHead key={index}>
                     <span className="flex gap-2">
                       {column.name}
                       {renderColumnIcon(column)}
                     </span>
-                    </TableHead>
+                  </TableHead>
                 ))}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {
-                tableData && tableData.map((row, rowIndex) => (
-                <TableRow key={rowIndex} className="hover:bg-slate-100">
-                  {tableSchema?.columns.map((column, colIndex) => (
-                    <TableCell
-                    key={colIndex}
-                    onDoubleClick={() =>
-                      handleDoubleClick(
-                        rowIndex,
-                        column.name,
-                        isJson(row[column.name]) && column.name.toLowerCase() === 'json' ? JSON.stringify(row[column.name]) : row[column.name]
-                      )
-                    }
-                  >
-                  
-                      {editingCell &&
-                      editingCell.rowIndex === rowIndex &&
-                      editingCell.colName === column.name ? (
-                        <input
-                          type="text"
-                          value={editingCell.value}
-                          onChange={handleInputChange}
-                          onBlur={handleBlur}
-                          onKeyDown={handleKeyDown}
-                          className="p-1 border rounded bg-white"
-                          autoFocus
-                        />
-                      ) : column.type.toLowerCase() === "json" ? (
-                        JSON.stringify(row[column.name] ?? "NULL")
-                      ) : (
-                        row[column.name] ?? "NULL"
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
+              {tableData &&
+                tableData.map((row, rowIndex) => (
+                  <TableRow key={rowIndex} className="hover:bg-slate-100">
+                    {tableSchema.columns.map((column, colIndex) => (
+                      <TableCell
+                        key={colIndex}
+                        onDoubleClick={() =>
+                          handleDoubleClick(
+                            rowIndex,
+                            column.name,
+                            isJson(row[column.name]) &&
+                              column.name.toLowerCase() === "json"
+                              ? JSON.stringify(row[column.name])
+                              : row[column.name]
+                          )
+                        }
+                      >
+                        {editingCell &&
+                        editingCell.rowIndex === rowIndex &&
+                        editingCell.colName === column.name ? (
+                          <input
+                            type="text"
+                            value={editingCell.value}
+                            onChange={handleInputChange}
+                            onBlur={handleBlur}
+                            onKeyDown={handleKeyDown}
+                            className="p-1 border rounded bg-white"
+                            autoFocus
+                          />
+                        ) : column.type.toLowerCase() === "json" ? (
+                          JSON.stringify(row[column.name] ?? "NULL")
+                        ) : (
+                          row[column.name] ?? "NULL"
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </div>
+      ) : (
+        <div>
+          <h1>Table not available</h1>
+        </div>
       )}
-
+  
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2">
         <SchemaLegend />
       </div>
     </div>
   );
+  
 }
